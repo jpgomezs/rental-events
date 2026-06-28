@@ -11,7 +11,7 @@ import httpx
 import csv
 from io import StringIO
 from app.clients.ezrentout import EzRentOutEndpoint, create_ezrentout_client
-from app.schemas.asset import Asset
+from app.schemas.schemas import Asset
 
 def rented_out_assets() -> list[Asset]:
     ezrent_client = create_ezrentout_client()
