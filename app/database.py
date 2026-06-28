@@ -1,0 +1,23 @@
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from app.db_base import Base
+from app.models.rental_event import Event
+
+SQL_ALCHEMY_DB_URL = "postgresql+psycopg:///rental_events"
+
+engine = create_engine(SQL_ALCHEMY_DB_URL, echo=True)
+
+Session = sessionmaker(bind=engine)
+
+Base.metadata.create_all(engine)
+
+SQL_ALCHEMY_DB_URL = "postgresql+psycopg:///rental_events"
+
+engine = create_engine(SQL_ALCHEMY_DB_URL, echo=True)
+
+
+Session = sessionmaker(bind=engine)
+session = Session()
+
+Base.metadata.create_all(engine)
+

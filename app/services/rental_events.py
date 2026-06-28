@@ -1,3 +1,11 @@
+import csv
+from pathlib import Path
+from datetime import datetime
+
+from app.database import Session
+from app.models.rental_event import Event
+from sqlalchemy.dialects.postgresql import insert
+
 import time
 import httpx
 import csv
@@ -51,7 +59,7 @@ def detect_asset_changes(
         "check_outs": [current[asset_id] for asset_id in check_out_ids],
     }
 
-def download_events_report() -> list[csv.DictReader]:
+def download_events_report() -> csv.DictReader:
     ezrent_client = create_ezrentout_client()
     ezrent_endpoint = EzRentOutEndpoint(ezrent_client)
 
@@ -77,4 +85,61 @@ def download_events_report() -> list[csv.DictReader]:
 
     reader = csv.DictReader(StringIO(response.text))
 
-    return list(reader)
+    return reader
+
+def parse_datetime(value: str) -> datetime:
+    return datetime.strptime(value, "%d-%m-%Y %H:%M")
+
+
+def maybe_int(value):
+    return int(value) if value not in ("", None) else None
+
+
+def maybe_float(value):
+    return float(value) if value not in ("", None) else None
+
+
+def maybe_datetime(value):
+    return parse_datetime(value) if value not in ("", None) else None
+
+
+def ingest_report(reader):
+    with Session() as session:
+        for row in reader:
+            values = {
+                "ain": row["Rentouts / Returns - AIN"],
+                "action_taken_on": parse_datetime(row["Rentouts / Returns - Action Taken On"]),
+                "action": row["Rentouts / Returns - Action"],
+
+                "item_id": maybe_int(row["Rentouts / Returns - Item#"]),
+                "order_id": maybe_int(row["Order - Order#"]),
+                "quantity": maybe_int(row["Rentouts / Returns - Quantity"]),
+
+                "fuel_percentage": maybe_float(row["Rentouts / Returns - Porcentaje de combustible "]),
+                "meter_reading": maybe_float(row["Item - Rental Meter (Current Value)"]),
+
+                "item_name": row["Rentouts / Returns - Item Name"],
+                "item_type": row["Item - Item Type"],
+                "oin": row["Order - Identification Number"],
+
+                "actual_usage": maybe_int(row["Order Line Item - Actual Usage"]),
+                "meter_start": maybe_float(row["Order Line Item - Meter Start"]),
+                "meter_end": maybe_float(row["Order Line Item - Meter End"]),
+
+                "rentout_date": maybe_datetime(row["Order Line Item - Rent Out/Selling Date"]),
+                "return_date": maybe_datetime(row["Order Line Item - Return Date"]),
+
+                "fuel_capacity": maybe_float(row["Item - Capacidad Combustible Gal"]),
+                "fuel_type": row["Item - Tipo Combustible"] or None,
+
+                "expected_return_date": maybe_datetime(row["Rentouts / Returns - Expected Return Date"]),
+            }
+
+            statement = insert(Event).values(**values)
+            statement = statement.on_conflict_do_nothing(
+                index_elements=["ain", "action_taken_on", "action"]
+            )
+
+            session.execute(statement)
+
+        session.commit()

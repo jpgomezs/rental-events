@@ -3,8 +3,11 @@ import time
 from app.services.rental_events import (
     detect_asset_changes,
     download_events_report,
-    rented_assets_ids
+    rented_assets_ids,
+    parse_datetime,
+    ingest_report,
 )
+
 
 def main():
     previous_snapshot = rented_assets_ids()
@@ -13,17 +16,20 @@ def main():
         time.sleep(10)
         current_snapshot = rented_assets_ids()
         events = detect_asset_changes(previous_snapshot, current_snapshot)
-        print(events)
-        if not events:
+
+
+        has_events = bool(events['check_ins'] or events['check_outs'])
+
+        if not has_events:
             print("No asset check-in or check-out detected")
         else:
-            #events_report = download_events_report()
-            print("Events detected")
+            reader =download_events_report()
+            print("Asset check-in or check-out detected, processing report")
+            time.sleep(10)
+            ingest_report(reader)
+
         previous_snapshot = current_snapshot
+
 
 if __name__ == "__main__":
     main()
-    #rows = download_events_report()
-
-    #for row in rows:
-    #    print(row)
