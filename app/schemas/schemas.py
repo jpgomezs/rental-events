@@ -13,9 +13,6 @@ class Asset(BaseModel):
     hour_meter: float
     last_order_id: str | None = None
 
-# TODO:
-# Normalize trailing blank spaces and empty strings.
-# Convert "" and "N/A" to None before validation.
 class Event(BaseModel):
     ain: str = Field(validation_alias="Rentouts / Returns - AIN")
 
@@ -81,23 +78,3 @@ class Event(BaseModel):
     )
 
     item_type: str = Field(validation_alias="Item - Item Type")
-
-
-# TODO NOTE
-# Preprocessing CSV
-#def normalize_csv_row(row: dict[str, str]) -> dict[str, Any]:
-#    normalized = {}
-#
-#    for key, value in row.items():
-#        if value == "" or value == "N/A":
-#            normalized[key] = None
-#        else:
-#            normalized[key] = value
-#
-#    return normalized
-
-# Removing leading and trailing spaces from every header
-#row = {
-#    key.strip(): value
-#    for key, value in row.items()
-#}
