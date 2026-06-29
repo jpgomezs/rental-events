@@ -1,6 +1,7 @@
-import csv
+from csv import DictReader
 from pathlib import Path
 from datetime import datetime
+from _collections_abc import Iterator
 
 from app.database import Session
 from app.models.rental_event import Event
@@ -101,6 +102,19 @@ def maybe_float(value):
 
 def maybe_datetime(value):
     return parse_datetime(value) if value not in ("", None) else None
+
+
+def process_csv(reader: DictReader) -> Iterator[dict[str, str | None]]:
+    for row in reader:
+        processed_row = {}
+
+        for key, value in row.items():
+            clean_key = key.rstrip()
+            clean_value = None if value in ("", "N/A") else value
+
+            processed_row[clean_key] = clean_value
+        # Yield the complete row before moving to the next one
+        yield processed_row
 
 
 def ingest_report(reader):
