@@ -109,7 +109,7 @@ def process_csv(reader: csv.DictReader) -> Iterator[dict[str, str | None]]:
         processed_row = {}
 
         for key, value in row.items():
-            clean_key = key.rstrip()
+            clean_key = key.strip()
             clean_value = None if value in ("", "N/A") else value
 
             processed_row[clean_key] = clean_value
