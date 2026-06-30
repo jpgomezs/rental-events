@@ -1,4 +1,4 @@
-from csv import DictReader
+import csv
 from pathlib import Path
 from datetime import datetime
 from _collections_abc import Iterator
@@ -104,7 +104,7 @@ def maybe_datetime(value):
     return parse_datetime(value) if value not in ("", None) else None
 
 
-def process_csv(reader: DictReader) -> Iterator[dict[str, str | None]]:
+def process_csv(reader: csv.DictReader) -> Iterator[dict[str, str | None]]:
     for row in reader:
         processed_row = {}
 
