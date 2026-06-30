@@ -33,6 +33,6 @@ class Event(Base):
     fuel_capacity = Column(Float)
     fuel_type = Column(String)
     item_name = Column(String)
-    meter_reading = Column(Float)
+    rental_meter_ez = Column(Float)
     expected_return_date = Column(DateTime)
     item_type = Column(String)
