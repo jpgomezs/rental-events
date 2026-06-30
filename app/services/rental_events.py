@@ -12,7 +12,7 @@ import httpx
 import csv
 from io import StringIO
 from app.clients.ezrentout import EzRentOutEndpoint, create_ezrentout_client
-from app.schemas.schemas import Asset
+from app.schemas.schemas import Asset, EventReportRow
 
 def rented_out_assets() -> list[Asset]:
     ezrent_client = create_ezrentout_client()
@@ -128,36 +128,10 @@ def process_csv(reader: csv.DictReader) -> Iterator[dict[str, str | None]]:
 def ingest_report(reader):
     with Session() as session:
         for row in reader:
-            values = {
-                "ain": row["Rentouts / Returns - AIN"],
-                "action_taken_on": parse_datetime(row["Rentouts / Returns - Action Taken On"]),
-                "action": row["Rentouts / Returns - Action"],
+            report_event = EventReportRow.model_validate(row)
 
-                "item_id": maybe_int(row["Rentouts / Returns - Item#"]),
-                "order_id": maybe_int(row["Order - Order#"]),
-                "quantity": maybe_int(row["Rentouts / Returns - Quantity"]),
+            statement = insert(Event).values(**report_event.model_dump())
 
-                "fuel_percentage": maybe_float(row["Rentouts / Returns - Porcentaje de combustible "]),
-                "meter_reading": maybe_float(row["Item - Rental Meter (Current Value)"]),
-
-                "item_name": row["Rentouts / Returns - Item Name"],
-                "item_type": row["Item - Item Type"],
-                "oin": row["Order - Identification Number"],
-
-                "actual_usage": maybe_int(row["Order Line Item - Actual Usage"]),
-                "meter_start": maybe_float(row["Order Line Item - Meter Start"]),
-                "meter_end": maybe_float(row["Order Line Item - Meter End"]),
-
-                "rentout_date": maybe_datetime(row["Order Line Item - Rent Out/Selling Date"]),
-                "return_date": maybe_datetime(row["Order Line Item - Return Date"]),
-
-                "fuel_capacity": maybe_float(row["Item - Capacidad Combustible Gal"]),
-                "fuel_type": row["Item - Tipo Combustible"] or None,
-
-                "expected_return_date": maybe_datetime(row["Rentouts / Returns - Expected Return Date"]),
-            }
-
-            statement = insert(Event).values(**values)
             statement = statement.on_conflict_do_nothing(
                 index_elements=["ain", "action_taken_on", "action"]
             )
