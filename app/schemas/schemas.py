@@ -13,7 +13,7 @@ class Asset(BaseModel):
     hour_meter: float
     last_order_id: str | None = None
 
-class Event(BaseModel):
+class EventReportRow(BaseModel):
     ain: str = Field(validation_alias="Rentouts / Returns - AIN")
 
     action_taken_on: datetime = Field(
