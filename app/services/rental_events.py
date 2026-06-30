@@ -106,11 +106,19 @@ def maybe_datetime(value):
 
 def process_csv(reader: csv.DictReader) -> Iterator[dict[str, str | None]]:
     for row in reader:
+        date_keys = [
+            'Rentouts / Returns - Action Taken On',
+            'Order Line Item - Rent Out/Selling Date',
+            'Order Line Item - Return Date',
+            'Rentouts / Returns - Expected Return Date',
+        ]
         processed_row = {}
 
         for key, value in row.items():
             clean_key = key.strip()
             clean_value = None if value in ("", "N/A") else value
+            if clean_key in date_keys and clean_value is not None:
+                clean_value = datetime.strptime(value, '%d-%m-%Y %H:%M')
 
             processed_row[clean_key] = clean_value
         # Yield the complete row before moving to the next one
