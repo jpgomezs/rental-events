@@ -6,6 +6,7 @@ from app.services.rental_events import (
     rented_assets_ids,
     parse_datetime,
     ingest_report,
+    process_csv,
 )
 
 
@@ -26,7 +27,8 @@ def main():
             reader =download_events_report()
             print("Asset check-in or check-out detected, processing report")
             time.sleep(10)
-            ingest_report(reader)
+            clean_reader = process_csv(reader)
+            ingest_report(clean_reader)
 
         previous_snapshot = current_snapshot
 
