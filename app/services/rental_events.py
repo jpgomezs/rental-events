@@ -130,12 +130,28 @@ def ingest_report(reader):
         for row in reader:
             report_event = EventReportRow.model_validate(row)
 
-            statement = insert(Event).values(**report_event.model_dump())
-
-            statement = statement.on_conflict_do_nothing(
+            statement = (
+                insert(Event).values(**report_event.model_dump())
+                .on_conflict_do_nothing(
                 index_elements=["ain", "action_taken_on", "action"]
+                )
             )
 
+            # NOTE: execute() clearly separates two phases: building the
+            # statement, and executing the statement.
             session.execute(statement)
 
         session.commit()
+
+
+            # NOTE: SQLAlchemy statements are immutable. Methods that add
+            # clauses return a new statement, so reassign the variable.
+            # NOTE: Statements can be built incrementally by chaining methods
+            # as in the example shown below.
+
+            #statement = insert(Event).values(**report_event.model_dump())
+
+            #statement = statement.on_conflict_do_nothing(
+            #    index_elements=["ain", "action_taken_on", "action"]
+            #)
+
