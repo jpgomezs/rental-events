@@ -13,6 +13,7 @@ from io import StringIO
 from app.clients.ezrentout import EzRentOutEndpoint, create_ezrentout_client
 from app.schemas.schemas import Asset, EventReportRow
 
+
 def rented_out_assets() -> list[Asset]:
     ezrent_client = create_ezrentout_client()
     ezrent_endpoint = EzRentOutEndpoint(ezrent_client)
