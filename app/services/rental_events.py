@@ -35,6 +35,7 @@ def rented_out_assets() -> list[Asset]:
     finally:
         ezrent_client.close()
 
+
 def rented_assets_ids() -> set:
     rented_assets = rented_out_assets()
 
@@ -43,6 +44,7 @@ def rented_assets_ids() -> set:
         asset.ez_id: asset
         for asset in  rented_assets
     }
+
 
 def detect_asset_changes(
     previous: dict[int, Asset],
@@ -58,6 +60,7 @@ def detect_asset_changes(
         "check_ins": [previous[asset_id] for asset_id in check_in_ids],
         "check_outs": [current[asset_id] for asset_id in check_out_ids],
     }
+
 
 def download_events_report() -> csv.DictReader:
     ezrent_client = create_ezrentout_client()
@@ -86,6 +89,7 @@ def download_events_report() -> csv.DictReader:
     reader = csv.DictReader(StringIO(response.text))
 
     return reader
+
 
 def parse_datetime(value: str) -> datetime:
     return datetime.strptime(value, "%d-%m-%Y %H:%M")
@@ -153,4 +157,3 @@ def ingest_report(reader):
             #statement = statement.on_conflict_do_nothing(
             #    index_elements=["ain", "action_taken_on", "action"]
             #)
-
