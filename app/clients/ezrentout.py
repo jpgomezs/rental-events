@@ -80,10 +80,12 @@ class EzRentOutEndpoint:
         response.raise_for_status()
         return response.json()
 
-    # TODO: Change function name, to the specific report it fetches.
     def export_custom_report(self):
-        """Initiates the export process from EZRentout for the check-in
-        check-out report in CSV format.
+        """Initiates the export process for the specified custom
+        report in CSV format.
+
+        Returns the background job information used to track report
+        generation and retrieve the download URL.
         """
         response = self.client.post(
             "/reports/custom_report.api",
