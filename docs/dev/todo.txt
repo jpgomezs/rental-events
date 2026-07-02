@@ -37,3 +37,14 @@ download_csv(url: str) -> csv.DictReader
 Then download_events_report() would simply coordinate those steps.
 Your current implementation is still readable, though, so I wouldn't refactor
 it unless the workflow becomes more complex.
+
+Consider changing to this structure:
+
+app/
+└── clients/
+    └── ezrentout/
+        ├── __init__.py
+        ├── client.py
+        ├── assets.py
+        ├── reports.py
+        └── background_jobs.py
