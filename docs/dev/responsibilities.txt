@@ -1,0 +1,67 @@
+A good responsibility split
+
+Client package
+
+Makes HTTP requests.
+Handles pagination.
+Parses JSON/CSV.
+Converts external data into your API models (Asset, BackgroundJob, ReportRow, etc.).
+
+Service layer
+
+Implements business logic.
+Combines data from multiple API calls.
+Stores data in the database.
+Detects check-ins/check-outs.
+Marks events complete.
+The exception
+
+Avoid having the client return database models (SQLAlchemy models). Those belong to the
+persistence layer.
+
+It's perfectly appropriate for the client to return Pydantic models that represent EZRentOut
+resources.
+
+For example:
+
+class Asset(BaseModel):
+    ez_id: int
+    internal_id: str
+    state: str
+
+Then:
+
+asset = assets_api.get_asset(123)  # -> Asset
+assets = assets_api.list_all_assets()  # -> list[Asset]
+
+This gives the rest of your application a clean, typed interface.
+
+Consider naming these models to reflect that they are EZRentOut models,
+since you also have database models.
+
+For example:
+
+schemas/
+    ezrentout.py
+        EzAsset
+        EzBackgroundJob
+        EzReportRow
+
+models/
+    rental_event.py   # SQLAlchemy model
+
+That makes it immediately clear whether a model represents external API
+data or your application's persisted data.
+
+One thing I would separate
+
+I would keep the responsibilities like this:
+
+EzRentOutClient: sends HTTP requests (get, post, authentication, retries, etc.).
+API modules (assets.py, reports.py, etc.): call the client, parse the response,
+and return Pydantic models.
+Services: implement business logic using those models.
+
+So yes, your client package can—and often should—return Pydantic models rather
+than raw JSON. It makes the rest of your code cleaner, safer, and less coupled
+to the external API.
