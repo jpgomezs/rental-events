@@ -98,8 +98,7 @@ class EzRentOutEndpoint:
         response.raise_for_status()
         return response.json()
 
-    # TODO: Correct Typo
-    def get_backgroud_job_details(self, job_id):
+    def get_background_job_details(self, job_id):
         """Return the details of a background job."""
         response = self.client.get(
             f"/background_jobs/{job_id}.api"

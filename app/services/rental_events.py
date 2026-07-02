@@ -98,7 +98,7 @@ def download_events_report() -> csv.DictReader:
     report_id =  report_data['background_job']['id']
 
     time.sleep(20)
-    background_jobs_details = ezrent_endpoint.get_backgroud_job_details(report_id)
+    background_jobs_details = ezrent_endpoint.get_background_job_details(report_id)
 
     attachments = background_jobs_details['background_job']['attachments']
 
