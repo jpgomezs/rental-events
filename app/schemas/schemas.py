@@ -4,6 +4,8 @@ from pydantic import BaseModel, Field
 
 
 class Asset(BaseModel):
+    """Represents an asset managed by EZRentOut."""
+
     ez_id: int
     internal_id: str
     state: str
@@ -12,7 +14,16 @@ class Asset(BaseModel):
     hour_meter: float
     last_order_id: str | None = None
 
+
+# TODO: Group related fields
+# Event information}
+# Fuel and meter information
+# Order information
+# Item information
+
 class EventReportRow(BaseModel):
+    """Represents a single row from an EZRentOut events report."""
+
     ain: str = Field(validation_alias="Rentouts / Returns - AIN")
 
     action_taken_on: datetime = Field(

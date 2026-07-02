@@ -15,6 +15,12 @@ from app.schemas.schemas import Asset, EventReportRow
 
 
 def rented_out_assets() -> list[Asset]:
+    """Return all assets that are currently rented out.
+
+    Retrieves the list of rented-out assets from the EZRentOut API,
+    converts the response into a list of `Asset` models,
+    and closes the API client before returning.
+    """
     ezrent_client = create_ezrentout_client()
     ezrent_endpoint = EzRentOutEndpoint(ezrent_client)
 
@@ -36,11 +42,14 @@ def rented_out_assets() -> list[Asset]:
     finally:
         ezrent_client.close()
 
-
+# TODO:
+# Be explicit in the return value type hint: dict[int, Asset])
+# Consider renaming function to: rented_assets_by_id() -> dict[int, Asset]:
+# because it returns a mapping from IDs to assets, not just the IDs themselves.
 def rented_assets_ids() -> set:
+    """Return a mapping of EZRentOut asset IDs to `Asset` models."""
     rented_assets = rented_out_assets()
 
-    # {} is the syntax literal marker for defining a set
     return {
         asset.ez_id: asset
         for asset in  rented_assets
@@ -51,6 +60,12 @@ def detect_asset_changes(
     previous: dict[int, Asset],
     current: dict[int, Asset],
 ) -> dict[str, list[Asset]]:
+    """Detect changes between two snapshots of rented assets.
+
+    Returns a dictionary containing two lists:
+    - ``check_ins``: Assets that are no longer rented.
+    - ``check_outs``: Assets that have been newly rented.
+    """
     previous_ids = set(previous)
     current_ids = set(current)
 
@@ -62,8 +77,19 @@ def detect_asset_changes(
         "check_outs": [current[asset_id] for asset_id in check_out_ids],
     }
 
-
+# Consider splitting it into smaller helpers, see notes.txt
 def download_events_report() -> csv.DictReader:
+    """Download the latest events report as a CSV reader.
+
+    Requests the configured custom report from the EZRentOut API,
+    waits for the report to be generated, downloads the CSV file,
+    and returns a `csv.DictReader`.
+
+    Raises:
+        ValueError: If the generated report has no attachment or
+            download URL.
+        httpx.HTTPStatusError: If any HTTP request fails.
+    """
     ezrent_client = create_ezrentout_client()
     ezrent_endpoint = EzRentOutEndpoint(ezrent_client)
 
@@ -93,22 +119,31 @@ def download_events_report() -> csv.DictReader:
 
 
 def parse_datetime(value: str) -> datetime:
+    """Parse a date and time string in ``"%d-%m-%Y %H:%M"`` format."""
     return datetime.strptime(value, "%d-%m-%Y %H:%M")
 
-
+# TODO: Delete function
 def maybe_int(value):
     return int(value) if value not in ("", None) else None
 
-
+# TODO: Delete function
 def maybe_float(value):
     return float(value) if value not in ("", None) else None
 
-
+# TODO: Delete function
 def maybe_datetime(value):
     return parse_datetime(value) if value not in ("", None) else None
 
-
+# TODO: Change return type hint to:
+# Iterator[dict[str, str | datetime | None]]
+# Move date_keys outside the loop
 def process_csv(reader: csv.DictReader) -> Iterator[dict[str, str | None]]:
+    """Yield normalized rows from a CSV reader.
+
+    Strips whitespace from column names, converts empty and "N/A"
+    values to `None`, parses date fields into `datetime` objects,
+    and yields each processed row.
+    """
     for row in reader:
         date_keys = [
             'Rentouts / Returns - Action Taken On',
@@ -128,8 +163,15 @@ def process_csv(reader: csv.DictReader) -> Iterator[dict[str, str | None]]:
         # Yield the complete row before moving to the next one
         yield processed_row
 
-
+# TODO Add type hints Iterator[dict[str, str | datetime | int | float | None]]
+# -> None:
 def ingest_report(reader):
+    """Insert processed report rows into the database.
+
+    Validates each row against the `EventReportRow` model,
+    inserts it into the database, ignores duplicate events,
+    and commits the transaction.
+    """
     with Session() as session:
         for row in reader:
             report_event = EventReportRow.model_validate(row)

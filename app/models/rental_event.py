@@ -10,8 +10,11 @@ from app.db_base import Base
 
 
 class Event(Base):
+    """Represents a rental event stored in the application's database."""
     __tablename__ = 'events'
 
+    # NOTE: Add: Prevent the same rental event from being imported
+    # more than once.
     __table_args__ = (
         UniqueConstraint('ain', 'action_taken_on', 'action'),
     )
