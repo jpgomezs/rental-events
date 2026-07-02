@@ -82,7 +82,9 @@ class EzRentOutEndpoint:
 
     # TODO: Change function name, to the specific report it fetches.
     def export_custom_report(self):
-        """Request the export of the configured custom report."""
+        """Initiates the export process from EZRentout for the check-in
+        check-out report in CSV format.
+        """
         response = self.client.post(
             "/reports/custom_report.api",
             data="report_id=707267"
