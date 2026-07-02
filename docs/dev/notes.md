@@ -8,14 +8,6 @@ When a fueled asset is returned, a charge for fuel should be added to the EZRent
 * Ezrentout doesn't record fuel events for swaps, or early returns.
 * Ezrentout's API doesn't expose order id when an item is returned, so a custom report will have to be used to track events.
 
-## Basic Flow
-
-* An asset is returned
-* An event report is downloaded
-* The report is transformed to valid and usable data
-* Each event is stored in a db
-* If event critical data for the process is missing from the row, get the information from staff (fuel %, hour meter reading)
-* Once an event is complete, post the computed data to EZRentout. This post should be idempotent, the db record id should be linked to the custom entry id.
 
 ## Data Flow
 
