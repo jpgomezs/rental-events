@@ -1,0 +1,39 @@
+Consider defining a Pydantic Model for AssetChanges:
+
+Your return type:
+dict[str, list[Asset]]
+
+If this grows, you might consider defining a Pydantic model:
+
+class AssetChanges(BaseModel):
+    check_ins: list[Asset]
+    check_outs: list[Asset]
+
+Then your function becomes:
+
+def detect_asset_changes(
+    previous: dict[int, Asset],
+    current: dict[int, Asset],
+) -> AssetChanges:
+
+and returns:
+
+return AssetChanges(
+    check_ins=[previous[id] for id in check_in_ids],
+    check_outs=[current[id] for id in check_out_ids],
+)
+
+This is more self-documenting and gives you autocompletion
+(changes.check_ins instead of changes["check_ins"]). For a small project,
+your dictionary approach is perfectly reasonable, but a dedicated model
+becomes increasingly valuable as the project grows.
+
+Consider breaking down function download_events_reports
+
+request_events_report() -> int
+wait_for_report(report_id: int) -> str (returns the download URL)
+download_csv(url: str) -> csv.DictReader
+
+Then download_events_report() would simply coordinate those steps.
+Your current implementation is still readable, though, so I wouldn't refactor
+it unless the workflow becomes more complex.
