@@ -48,8 +48,11 @@ class EzRentOutEndpoint:
 
         return all_assets
 
-    #TODO: Refactor parameter line into more lines
-    def get_asset_history_page(self, asset_id: str, page: int = 1) -> dict[str, Any]:
+    def get_asset_history_page(
+        self,
+        asset_id: str,
+        page: int = 1,
+    ) -> dict[str, Any]:
         """Return a page of history entries for an asset."""
         response = self.client.get(
             f"assets/{asset_id}/history_paginate.api",
@@ -64,8 +67,11 @@ class EzRentOutEndpoint:
         response.raise_for_status()
         return response.json()
 
-    #TODO: Refactor parameter line into more lines
-    def get_custom_field_history(self, asset_id: str, attribute_id: str) -> dict[str, list]:
+    def get_custom_field_history(
+        self,
+        asset_id: str,
+        attribute_id: str,
+    ) -> dict[str, list]:
         """Return the change history for an asset's custom field."""
         response = self.client.get(
             f"/assets/{asset_id}/custom_attribute_history.api",
