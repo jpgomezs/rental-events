@@ -43,10 +43,9 @@ def rented_out_assets() -> list[Asset]:
         ezrent_client.close()
 
 # TODO:
-# Be explicit in the return value type hint: dict[int, Asset])
 # Consider renaming function to: rented_assets_by_id() -> dict[int, Asset]:
 # because it returns a mapping from IDs to assets, not just the IDs themselves.
-def rented_assets_ids() -> set:
+def rented_assets_ids() -> dict[int, Asset]:
     """Return a mapping of EZRentOut asset IDs to `Asset` models."""
     rented_assets = rented_out_assets()
 
@@ -123,10 +122,11 @@ def parse_datetime(value: str) -> datetime:
     return datetime.strptime(value, "%d-%m-%Y %H:%M")
 
 
-# TODO: Change return type hint to:
-# Iterator[dict[str, str | datetime | None]]
+# TODO:
 # Move date_keys outside the loop
-def process_csv(reader: csv.DictReader) -> Iterator[dict[str, str | None]]:
+def process_csv(
+    reader: csv.DictReader,
+) -> Iterator[dict[str, str | datetime | None]]:
     """Yield normalized rows from a CSV reader.
 
     Strips whitespace from column names, converts empty and "N/A"
@@ -152,9 +152,9 @@ def process_csv(reader: csv.DictReader) -> Iterator[dict[str, str | None]]:
         # Yield the complete row before moving to the next one
         yield processed_row
 
-# TODO Add type hints Iterator[dict[str, str | datetime | int | float | None]]
-# -> None:
-def ingest_report(reader):
+def ingest_report(
+    reader: Iterator[dict[str, str | datetime | int | float | None]],
+) -> None:
     """Insert processed report rows into the database.
 
     Validates each row against the `EventReportRow` model,
