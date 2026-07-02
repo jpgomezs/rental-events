@@ -122,17 +122,6 @@ def parse_datetime(value: str) -> datetime:
     """Parse a date and time string in ``"%d-%m-%Y %H:%M"`` format."""
     return datetime.strptime(value, "%d-%m-%Y %H:%M")
 
-# TODO: Delete function
-def maybe_int(value):
-    return int(value) if value not in ("", None) else None
-
-# TODO: Delete function
-def maybe_float(value):
-    return float(value) if value not in ("", None) else None
-
-# TODO: Delete function
-def maybe_datetime(value):
-    return parse_datetime(value) if value not in ("", None) else None
 
 # TODO: Change return type hint to:
 # Iterator[dict[str, str | datetime | None]]
