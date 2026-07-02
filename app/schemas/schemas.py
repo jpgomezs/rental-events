@@ -1,7 +1,6 @@
 from datetime import datetime
 
 from pydantic import BaseModel, Field
-from sqlalchemy import Null
 
 
 class Asset(BaseModel):

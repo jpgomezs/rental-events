@@ -4,7 +4,6 @@ from app.services.rental_events import (
     detect_asset_changes,
     download_events_report,
     rented_assets_ids,
-    parse_datetime,
     ingest_report,
     process_csv,
 )

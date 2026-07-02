@@ -1,5 +1,4 @@
 import csv
-from pathlib import Path
 from datetime import datetime
 from _collections_abc import Iterator
 

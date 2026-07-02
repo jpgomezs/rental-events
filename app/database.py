@@ -1,7 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app.db_base import Base
-from app.models.rental_event import Event
 
 SQL_ALCHEMY_DB_URL = "postgresql+psycopg:///rental_events"
 
