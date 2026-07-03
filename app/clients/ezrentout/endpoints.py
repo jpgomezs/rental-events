@@ -1,6 +1,6 @@
 
 
-class EZRentOutEndpoint:
+class EzRentOutClient:
     """Provides methods for interacting with the EZRentOut API.
 
     Wraps an `httpx.Client` with methods for calling the API

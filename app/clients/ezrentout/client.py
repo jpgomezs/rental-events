@@ -4,7 +4,7 @@ from typing import Any
 from app.config import settings
 
 
-def create_ezrentout_client() -> httpx.Client:
+def create_http_client() -> httpx.Client:
     """Return an HTTP client configured for the EZRentOut API.
 
     Creates an `httpx.Client` with the EZRentOut base URL,
@@ -20,7 +20,7 @@ def create_ezrentout_client() -> httpx.Client:
         )
 
 
-class EzRentOutEndpoint:
+class EzRentOutClient:
     """Provides methods for interacting with the EZRentOut API.
 
     Wraps an `httpx.Client` with methods for calling the API

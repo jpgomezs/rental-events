@@ -11,8 +11,8 @@ import httpx
 import csv
 from io import StringIO
 from app.clients.ezrentout.client import (
-    EzRentOutEndpoint,
-    create_ezrentout_client,
+    EzRentOutClient,
+    create_http_client,
 )
 from app.schemas.schemas import Asset, EventReportRow
 
@@ -24,11 +24,11 @@ def rented_out_assets() -> list[Asset]:
     converts the response into a list of `Asset` models,
     and closes the API client before returning.
     """
-    ezrent_client = create_ezrentout_client()
-    ezrent_endpoint = EzRentOutEndpoint(ezrent_client)
+    http_client = create_http_client()
+    ezrentout = EzRentOutClient(http_client)
 
     try:
-        data = ezrent_endpoint.get_all_rented_out_assets()
+        data = ezrentout.get_all_rented_out_assets()
 
         return [
             Asset(
@@ -43,7 +43,7 @@ def rented_out_assets() -> list[Asset]:
         ]
 
     finally:
-        ezrent_client.close()
+        http_client.close()
 
 # TODO:
 # Consider renaming function to: rented_assets_by_id() -> dict[int, Asset]:
@@ -92,15 +92,15 @@ def download_events_report() -> csv.DictReader:
             download URL.
         httpx.HTTPStatusError: If any HTTP request fails.
     """
-    ezrent_client = create_ezrentout_client()
-    ezrent_endpoint = EzRentOutEndpoint(ezrent_client)
+    http_client = create_http_client()
+    ezrentout = EzRentOutClient(http_client)
 
-    report_data = ezrent_endpoint.export_custom_report()
+    report_data = ezrentout.export_custom_report()
 
     report_id =  report_data['background_job']['id']
 
     time.sleep(20)
-    background_jobs_details = ezrent_endpoint.get_background_job_details(report_id)
+    background_jobs_details = ezrentout.get_background_job_details(report_id)
 
     attachments = background_jobs_details['background_job']['attachments']
 
