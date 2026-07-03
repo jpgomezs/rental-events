@@ -45,10 +45,8 @@ def rented_out_assets() -> list[Asset]:
     finally:
         http_client.close()
 
-# TODO:
-# Consider renaming function to: rented_assets_by_id() -> dict[int, Asset]:
-# because it returns a mapping from IDs to assets, not just the IDs themselves.
-def rented_assets_ids() -> dict[int, Asset]:
+
+def rented_assets_by_id() -> dict[int, Asset]:
     """Return a mapping of EZRentOut asset IDs to `Asset` models."""
     rented_assets = rented_out_assets()
 
@@ -125,8 +123,6 @@ def parse_datetime(value: str) -> datetime:
     return datetime.strptime(value, "%d-%m-%Y %H:%M")
 
 
-# TODO:
-# Move date_keys outside the loop
 def process_csv(
     reader: csv.DictReader,
 ) -> Iterator[dict[str, str | datetime | None]]:
@@ -136,13 +132,14 @@ def process_csv(
     values to `None`, parses date fields into `datetime` objects,
     and yields each processed row.
     """
+    date_keys = [
+        'Rentouts / Returns - Action Taken On',
+        'Order Line Item - Rent Out/Selling Date',
+        'Order Line Item - Return Date',
+        'Rentouts / Returns - Expected Return Date',
+    ]
+
     for row in reader:
-        date_keys = [
-            'Rentouts / Returns - Action Taken On',
-            'Order Line Item - Rent Out/Selling Date',
-            'Order Line Item - Return Date',
-            'Rentouts / Returns - Expected Return Date',
-        ]
         processed_row = {}
 
         for key, value in row.items():
