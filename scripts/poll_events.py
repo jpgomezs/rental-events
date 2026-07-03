@@ -1,13 +1,11 @@
 import time
 
 from app.services.rental_events import (
-    detect_asset_changes,
     download_events_report,
-    rented_assets_by_id,
     ingest_report,
     process_csv,
 )
-
+from app.services.assets import detect_asset_changes, rented_assets_by_id
 
 def main():
     previous_snapshot = rented_assets_by_id()
