@@ -1,19 +1,19 @@
 import csv
+import time
+import httpx
 from datetime import datetime
 from _collections_abc import Iterator
+from io import StringIO
 
 from app.database import Session
 from app.models.rental_event import Event
 from sqlalchemy.dialects.postgresql import insert
 
-import time
-import httpx
-import csv
-from io import StringIO
 from app.clients.ezrentout.client import (
     EzRentOutClient,
     create_http_client,
 )
+
 from app.schemas.schemas import EventReportRow
 
 
@@ -92,6 +92,7 @@ def process_csv(
         # Yield the complete row before moving to the next one
         yield processed_row
 
+
 def ingest_report(
     reader: Iterator[dict[str, str | datetime | int | float | None]],
 ) -> None:
@@ -118,7 +119,6 @@ def ingest_report(
 
         session.commit()
 
-
             # NOTE: SQLAlchemy statements are immutable. Methods that add
             # clauses return a new statement, so reassign the variable.
             # NOTE: Statements can be built incrementally by chaining methods
@@ -129,3 +129,14 @@ def ingest_report(
             #statement = statement.on_conflict_do_nothing(
             #    index_elements=["ain", "action_taken_on", "action"]
             #)
+
+
+def import_events_report() -> None:
+    """Download, process, and ingest the latest rental events report.
+
+    Retrieves the latest events report from EZRentOut, transforms the
+    CSV into validated event records, and stores them in the database.
+    """
+    reader = download_events_report()
+    clean_reader = process_csv(reader)
+    ingest_report(clean_reader)
