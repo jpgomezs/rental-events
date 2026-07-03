@@ -10,7 +10,10 @@ import time
 import httpx
 import csv
 from io import StringIO
-from app.clients.ezrentout import EzRentOutEndpoint, create_ezrentout_client
+from app.clients.ezrentout.client import (
+    EzRentOutEndpoint,
+    create_ezrentout_client,
+)
 from app.schemas.schemas import Asset, EventReportRow
 
 

@@ -1,8 +1,6 @@
-import httpx
-from typing import Any
 
 
-class EzRentOutEndpoint:
+class EZRentOutEndpoint:
     """Provides methods for interacting with the EZRentOut API.
 
     Wraps an `httpx.Client` with methods for calling the API
