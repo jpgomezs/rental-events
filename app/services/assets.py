@@ -9,10 +9,9 @@ def rented_out_assets() -> list[Asset]:
     converts the response into a list of `Asset` models,
     and closes the API client before returning.
     """
-    http_client = create_http_client()
-    ezrentout = EzRentOutClient(http_client)
+    with create_http_client() as http_client:
+        ezrentout = EzRentOutClient(http_client)
 
-    try:
         data = ezrentout.get_all_rented_out_assets()
 
         return [
@@ -27,8 +26,6 @@ def rented_out_assets() -> list[Asset]:
             for asset in data
         ]
 
-    finally:
-        http_client.close()
 
 # Transforms data format of rented_out_assets
 def rented_assets_by_id() -> dict[int, Asset]:

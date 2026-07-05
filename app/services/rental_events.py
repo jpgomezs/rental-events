@@ -30,32 +30,30 @@ def download_events_report() -> csv.DictReader:
             download URL.
         httpx.HTTPStatusError: If any HTTP request fails.
     """
-    http_client = create_http_client()
-    ezrentout = EzRentOutClient(http_client)
+    with create_http_client() as http_client:
+        ezrentout = EzRentOutClient(http_client)
 
-    report_data = ezrentout.export_custom_report()
+        report_data = ezrentout.export_custom_report()
+        report_id =  report_data['background_job']['id']
 
-    report_id =  report_data['background_job']['id']
+        time.sleep(20)
 
-    time.sleep(20)
-    background_jobs_details = ezrentout.get_background_job_details(report_id)
+        background_jobs_details = ezrentout.get_background_job_details(report_id)
+        attachments = background_jobs_details['background_job']['attachments']
 
-    attachments = background_jobs_details['background_job']['attachments']
+        if not attachments:
+            raise ValueError(f"No attachments found for report {report_id}")
 
-    if not attachments:
-        raise ValueError(f"No attachments found for report {report_id}")
+        download_url = attachments[0].get('download_url')
 
-    download_url = attachments[0].get('download_url')
+        if not download_url:
+            raise ValueError(f"No download URL found for report {report_id}")
 
-    if not download_url:
-        raise ValueError(f"No download URL found for report {report_id}")
+        response = httpx.get(download_url)
+        response.raise_for_status()
 
-    response = httpx.get(download_url)
-    response.raise_for_status()
-
-    reader = csv.DictReader(StringIO(response.text))
-
-    return reader
+        reader = csv.DictReader(StringIO(response.text))
+        return reader
 
 
 def parse_datetime(value: str) -> datetime:
