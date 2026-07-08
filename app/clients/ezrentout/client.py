@@ -1,3 +1,5 @@
+from ast import Dict
+
 import httpx
 from typing import Any
 
@@ -83,7 +85,7 @@ class EzRentOutClient:
         response.raise_for_status()
         return response.json()
 
-    def export_custom_report(self):
+    def export_custom_report(self, custom_report_id: str) -> Dict[str, Dict]:
         """Initiates the export process for the specified custom
         report in CSV format.
 
@@ -92,7 +94,7 @@ class EzRentOutClient:
         """
         response = self.client.post(
             "/reports/custom_report.api",
-            data="report_id=707267"
+            data=f"report_id={custom_report_id}"
         )
         response.raise_for_status()
         return response.json()
