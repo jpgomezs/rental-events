@@ -19,6 +19,21 @@ from app.clients.ezrentout.client import (
 from app.schemas.schemas import EventReportRow
 
 
+EVENTS_REPORT_ID = "707267"
+REPORT_DATE_FORMAT = "%d-%m-%Y %H:%M"
+
+
+def import_events_report() -> None:
+    """Download, process, and ingest the latest rental events report.
+
+    Retrieves the latest events report from EZRentOut, transforms the
+    CSV into validated event records, and stores them in the database.
+    """
+    reader = download_events_report()
+    clean_reader = process_csv(reader)
+    ingest_report(clean_reader)
+
+
 def download_events_report() -> csv.DictReader:
     """Download the latest events report as a CSV reader.
 
@@ -34,86 +49,9 @@ def download_events_report() -> csv.DictReader:
     with create_http_client() as http_client:
         client = EzRentOutClient(http_client)
 
-        report_job_id = request_events_report_job_id(client)
-        wait_for_report(seconds=20)
-        return download_csv(client, report_job_id)
-
-EVENTS_REPORT_ID = "707267"
-
-def request_events_report_job_id(client: EzRentOutClient) -> str:
-    """Request generation of the events report and return its background job ID.
-
-    Initiates the export of the configured events report through the
-    EZRentOut API and extracts the identifier of the background job
-    responsible for generating the report.
-
-    Returns:
-        The background job ID used to track report generation.
-
-    Raises:
-        httpx.HTTPStatusError: If the report request fails.
-        KeyError: If the expected background job ID is missing from
-            the API response.
-    """
-    report_data = client.export_custom_report(EVENTS_REPORT_ID)
-    report_job_id =  report_data['background_job']['id']
-    return report_job_id
-
-# TODO: Consider polling to know when the report is ready
-def wait_for_report(seconds: int) -> None:
-    """Pause execution to allow the report to be generated.
-
-    Waits for the specified number of seconds before returning.
-    This is a temporary implementation until report readiness is
-    determined by polling the background job status.
-
-    Args:
-        seconds: Number of seconds to wait.
-    """
-    time.sleep(seconds)
-
-
-def download_csv(client: EzRentOutClient, background_job_id: str) -> csv.DictReader:
-    """Download the generated events report as a CSV reader.
-
-    Retrieves the background job details from the EZRentOut API,
-    obtains the download URL of the generated report, downloads the
-    CSV file, and returns it as a `csv.DictReader`.
-
-    Args:
-        client: EZRentOut API client.
-        background_job_id: Identifier of the background job that
-            generated the report.
-
-    Returns:
-        csv.DictReader: Reader for the downloaded CSV report.
-
-    Raises:
-        ValueError: If the background job has no attachments or no
-            download URL.
-        httpx.HTTPStatusError: If downloading the CSV fails.
-    """
-    background_jobs_details = client.get_background_job_details(background_job_id)
-    attachments = background_jobs_details['background_job']['attachments']
-
-    if not attachments:
-        raise ValueError(f"No attachments found for job {background_job_id}")
-
-    download_url = attachments[0].get('download_url')
-
-    if not download_url:
-        raise ValueError(f"No download URL found for job {background_job_id}")
-
-    response = httpx.get(download_url)
-    response.raise_for_status()
-
-    reader = csv.DictReader(StringIO(response.text))
-    return reader
-
-
-def parse_datetime(value: str) -> datetime:
-    """Parse a date and time string in ``"%d-%m-%Y %H:%M"`` format."""
-    return datetime.strptime(value, "%d-%m-%Y %H:%M")
+        report_job_id = _request_events_report_job_id(client)
+        _wait_for_report(seconds=20)
+        return _download_csv(client, report_job_id)
 
 
 def process_csv(
@@ -184,12 +122,78 @@ def ingest_report(
             #)
 
 
-def import_events_report() -> None:
-    """Download, process, and ingest the latest rental events report.
+def _request_events_report_job_id(client: EzRentOutClient) -> str:
+    """Request generation of the events report and return its background job ID.
 
-    Retrieves the latest events report from EZRentOut, transforms the
-    CSV into validated event records, and stores them in the database.
+    Initiates the export of the configured events report through the
+    EZRentOut API and extracts the identifier of the background job
+    responsible for generating the report.
+
+    Returns:
+        The background job ID used to track report generation.
+
+    Raises:
+        httpx.HTTPStatusError: If the report request fails.
+        KeyError: If the expected background job ID is missing from
+            the API response.
     """
-    reader = download_events_report()
-    clean_reader = process_csv(reader)
-    ingest_report(clean_reader)
+    report_data = client.export_custom_report(EVENTS_REPORT_ID)
+    report_job_id =  report_data['background_job']['id']
+    return report_job_id
+
+
+# TODO: Consider polling to know when the report is ready
+def _wait_for_report(seconds: int) -> None:
+    """Pause execution to allow the report to be generated.
+
+    Waits for the specified number of seconds before returning.
+    This is a temporary implementation until report readiness is
+    determined by polling the background job status.
+
+    Args:
+        seconds: Number of seconds to wait.
+    """
+    time.sleep(seconds)
+
+
+def _download_csv(client: EzRentOutClient, background_job_id: str) -> csv.DictReader:
+    """Download the generated events report as a CSV reader.
+
+    Retrieves the background job details from the EZRentOut API,
+    obtains the download URL of the generated report, downloads the
+    CSV file, and returns it as a `csv.DictReader`.
+
+    Args:
+        client: EZRentOut API client.
+        background_job_id: Identifier of the background job that
+            generated the report.
+
+    Returns:
+        csv.DictReader: Reader for the downloaded CSV report.
+
+    Raises:
+        ValueError: If the background job has no attachments or no
+            download URL.
+        httpx.HTTPStatusError: If downloading the CSV fails.
+    """
+    background_jobs_details = client.get_background_job_details(background_job_id)
+    attachments = background_jobs_details['background_job']['attachments']
+
+    if not attachments:
+        raise ValueError(f"No attachments found for job {background_job_id}")
+
+    download_url = attachments[0].get('download_url')
+
+    if not download_url:
+        raise ValueError(f"No download URL found for job {background_job_id}")
+
+    response = httpx.get(download_url)
+    response.raise_for_status()
+
+    reader = csv.DictReader(StringIO(response.text))
+    return reader
+
+
+def _parse_datetime(value: str) -> datetime:
+    """Parse a date and time string in ``"%d-%m-%Y %H:%M"`` format."""
+    return datetime.strptime(value, REPORT_DATE_FORMAT)
