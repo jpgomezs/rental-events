@@ -77,7 +77,7 @@ def process_csv(
             clean_key = key.strip()
             clean_value = None if value in ("", "N/A") else value
             if clean_key in date_keys and clean_value is not None:
-                clean_value = datetime.strptime(value, '%d-%m-%Y %H:%M')
+                clean_value = _parse_datetime(value)
 
             processed_row[clean_key] = clean_value
         # Yield the complete row before moving to the next one
