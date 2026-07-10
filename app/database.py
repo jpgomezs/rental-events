@@ -7,16 +7,3 @@ SQL_ALCHEMY_DB_URL = "postgresql+psycopg:///rental_events"
 engine = create_engine(SQL_ALCHEMY_DB_URL, echo=True)
 
 Session = sessionmaker(bind=engine)
-
-Base.metadata.create_all(engine)
-
-SQL_ALCHEMY_DB_URL = "postgresql+psycopg:///rental_events"
-
-engine = create_engine(SQL_ALCHEMY_DB_URL, echo=True)
-
-
-Session = sessionmaker(bind=engine)
-session = Session()
-
-Base.metadata.create_all(engine)
-
