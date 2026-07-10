@@ -1,4 +1,5 @@
-from sqlalchemy import (Integer,
+from sqlalchemy import (Boolean,
+                        Integer,
                         String,
                         DateTime,
                         Float,
@@ -39,3 +40,4 @@ class Event(Base):
     rental_meter_ez = Column(Integer)
     expected_return_date = Column(DateTime)
     item_type = Column(String)
+    is_complete = Column(Boolean, nullable=False, default=False)

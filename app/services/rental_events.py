@@ -97,8 +97,11 @@ def ingest_report(
         for row in reader:
             report_event = EventReportRow.model_validate(row)
 
+            event_data = report_event.model_dump()
+            event_data['is_complete'] = _is_event_complete(report_event)
+
             statement = (
-                insert(Event).values(**report_event.model_dump())
+                insert(Event).values(**event_data)
                 .on_conflict_do_nothing(
                 index_elements=["ain", "action_taken_on", "action"]
                 )
@@ -120,6 +123,13 @@ def ingest_report(
             #statement = statement.on_conflict_do_nothing(
             #    index_elements=["ain", "action_taken_on", "action"]
             #)
+
+
+def _is_event_complete(event: EventReportRow) -> bool:
+    return (
+        event.fuel_capacity is not None
+        and event.fuel_percentage is not None
+    )
 
 
 def _request_events_report_job_id(client: EzRentOutClient) -> str:
