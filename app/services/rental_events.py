@@ -126,10 +126,10 @@ def ingest_report(
 
 
 def _is_event_complete(event: EventReportRow) -> bool:
-    return (
-        event.fuel_capacity is not None
-        and event.fuel_percentage is not None
-    )
+    if event.fuel_capacity is None:
+        return True
+
+    return event.fuel_percentage is not None
 
 
 def _request_events_report_job_id(client: EzRentOutClient) -> str:
