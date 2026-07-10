@@ -95,11 +95,17 @@ def ingest_report(
     """
     with Session() as session:
         for row in reader:
+            # Pydantic validation happens before creating the model
+            # EventReportRow is the Pydantic class for the schema
             report_event = EventReportRow.model_validate(row)
 
+            # model_dump() returns a dict object of the model
             event_data = report_event.model_dump()
+            # as event_data is a dict, we add a new key-value pair
+            # No validation is needed because this value is computed by our code
             event_data['is_complete'] = _is_event_complete(report_event)
 
+            # Event is the SQLAlchemy model
             statement = (
                 insert(Event).values(**event_data)
                 .on_conflict_do_nothing(
